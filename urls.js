@@ -1,6 +1,7 @@
-const urls = [
-    'https://example.com',
-    'https://cnn.com',
-    'https://nytimes.com',
-    'https://wikipedia.org'
-];
+module.exports = {
+    links: () => [
+        'https://example.com',
+        'https://cnn.com',
+        'https://nytimes.com'
+    ]
+};
