@@ -53,4 +53,5 @@ function isEasyListAd(url, domainRules, urlPatternRules) {
     return false;
 }
 
+
 module.exports = { downloadEasyList, isEasyListAd };

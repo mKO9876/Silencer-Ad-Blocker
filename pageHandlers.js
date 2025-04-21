@@ -4,7 +4,7 @@ const {
     isKnownAdDomain, getResourceCategory,
     shouldSampleContent
 } = require('./helper');
-const { isEasyListAd } = require('./easylistDownloader');
+const { isEasyListAd } = require('./easylist');
 
 const onRequest = (request, timingsMap) => {
     timingsMap.set(request.url(), {
@@ -14,7 +14,7 @@ const onRequest = (request, timingsMap) => {
     });
 };
 
-const onRequestFinished = async (request, page, timingsMap, storage) => {
+const onRequestFinished = async (request, page, timingsMap, storage, domainRules, urlPatternRules) => {
     try {
         const response = await request.response();
         if (!response) return;
@@ -25,10 +25,21 @@ const onRequestFinished = async (request, page, timingsMap, storage) => {
         const now = Date.now();
         const mimeType = headers['content-type'] || 'unknown';
 
-        const isAd = isEasyListAd(request.url()) ||
+        const isAd = isEasyListAd(request.url(), domainRules, urlPatternRules) ||
             isKnownAdDomain(urlObj.hostname) ||
             hasAdKeywords(request.url()) ||
             hasTrackingParams(urlObj.searchParams);
+
+        // 🛡️ Safe content sampling
+        let contentSample = null;
+        if (shouldSampleContent(mimeType)) {
+            try {
+                const text = await response.text();
+                contentSample = text.slice(0, 500).replace(/\s+/g, ' ');
+            } catch (e) {
+                console.warn(`⚠️ Could not load body for this request: ${request.url()}`);
+            }
+        }
 
         const data = {
             timestamp: new Date().toISOString(),
@@ -57,11 +68,8 @@ const onRequestFinished = async (request, page, timingsMap, storage) => {
                 }
                 return acc;
             }, {}),
-            ...(shouldSampleContent(mimeType) && {
-                contentSample: (await response.text()).slice(0, 500).replace(/\s+/g, ' ')
-            }),
-            label: isAd ? 'ad' : 'non-ad',
-            confidence: isAd ? 0.8 : 0.5
+            ...(contentSample && { contentSample }),
+            label: isAd ? 'ad' : 'non-ad'
         };
 
         storage.push(data);
@@ -69,5 +77,6 @@ const onRequestFinished = async (request, page, timingsMap, storage) => {
         console.error(`❌ Error processing request ${request.url()}:`, err.message);
     }
 };
+
 
 module.exports = { onRequest, onRequestFinished };

@@ -6,7 +6,7 @@ const { parse } = require('json2csv');
 const { URL } = require('url');
 
 const targetURLs = require('./urls').links();
-const { downloadEasyList } = require('./easylistDownloader');
+const { downloadEasyList } = require('./easylist');
 const { onRequest, onRequestFinished } = require('./pageHandlers');
 const autoScroll = require('./autoScroll');
 const { saveData, saveCSV } = require('./dataSaver');
@@ -33,7 +33,7 @@ const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
     const requestTimings = new Map();
 
     page.on('request', (req) => onRequest(req, requestTimings));
-    page.on('requestfinished', (req) => onRequestFinished(req, page, requestTimings, allData.requests));
+    page.on('requestfinished', (req) => onRequestFinished(req, page, requestTimings, allData.requests, domainRules, urlPatternRules));
 
     for (const url of targetURLs) {
         console.log(`Visiting ${url}`);
