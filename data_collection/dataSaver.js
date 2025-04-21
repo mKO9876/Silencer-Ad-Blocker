@@ -8,7 +8,6 @@ const saveData = (requests, dir) => {
 
 const saveCSV = (requests, dir) => {
     const simplified = requests.map(r => ({
-        timestamp: r.timestamp,
         pageUrl: r.pageUrl,
         domain: r.domain,
         resourceType: r.resourceType,
