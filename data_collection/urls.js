@@ -25,6 +25,10 @@ module.exports = {
         'https://www.nbcnews.com/news/pope-francis/pope-francis-obituary-rcna32492',
         'https://www.nbcnews.com/business/economy/trump-taunts-jerome-powell-waiting-long-cut-rates-rcna202123',
         'https://www.washingtonpost.com',
-        'https://www.washingtonpost.com/world/2025/04/21/pope-francis-age/?itid=hp-mv-top-stories_banner-main_p003_f002'
+        'https://www.washingtonpost.com/world/2025/04/21/pope-francis-age/?itid=hp-mv-top-stories_banner-main_p003_f002',
+        'https://www.youtube.com',
+        'https://apnews.com',
+        'https://apnews.com/article/mahmoud-khalil-columbian-palestinians-detention-wife-birth-1716cc67d55f4001e4972f35dd18749e',
+
     ]
 };

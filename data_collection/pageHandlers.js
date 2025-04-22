@@ -30,20 +30,19 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
             hasAdKeywords(request.url()) ||
             hasTrackingParams(urlObj.searchParams);
 
-        // 🛡️ Safe content sampling
         let contentSample = null;
         if (shouldSampleContent(mimeType)) {
             try {
                 const text = await response.text();
                 contentSample = text.slice(0, 500).replace(/\s+/g, ' ');
             } catch (e) {
-                console.warn(`⚠️ Could not load body for this request: ${request.url()}`);
+                console.warn(`Could not load body for this request: ${request.url()}`);
             }
         }
 
         const data = {
-            timestamp: new Date().toISOString(),
-            pageUrl: page.url(),
+            // timestamp: new Date().toISOString(),
+            mainPageUrl: page.url(),
             url: request.url(),
             domain: urlObj.hostname,
             path: urlObj.pathname,
@@ -53,6 +52,7 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
             mimeType,
             sizeBytes: parseInt(headers['content-length']) || 0,
             resourceType: request.resourceType(),
+            isEasyListAd: isEasyListAd(request.url(), domainRules, urlPatternRules),
             resourceCategory: getResourceCategory(request.resourceType()),
             isThirdParty: !request.url().includes(new URL(page.url()).hostname),
             hasAdKeywords: hasAdKeywords(request.url()),
