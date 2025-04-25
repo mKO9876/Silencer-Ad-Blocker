@@ -67,11 +67,11 @@ module.exports = {
         'https://www.novilist.hr/',
         'https://www.telegram.hr/',
         'https://direktno.hr/?home',
+        'https://n1info.hr/',
 
         //others
         'https://www.supersport.hr/', //gambling site
         'https://www.njuskalo.hr/', //site for selling
-        'https://n1info.hr/',
         'https://www.zagreb.info/', //info site        
     ]
 };
