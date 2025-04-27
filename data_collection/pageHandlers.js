@@ -1,6 +1,6 @@
 const { URL } = require('url');
 const {
-    hasAdKeywords, hasTrackingParams,
+    hasAdKeywords,
     isKnownAdDomain, getResourceCategory,
     shouldSampleContent
 } = require('./helper');
@@ -27,8 +27,8 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
 
         const isAd = isEasyListAd(request.url(), domainRules, urlPatternRules) ||
             isKnownAdDomain(urlObj.hostname) ||
-            hasAdKeywords(urlObj.hostname + urlObj.pathname)
-        hasTrackingParams(urlObj.searchParams);
+            hasAdKeywords(urlObj.hostname + urlObj.pathname);
+
 
         let contentSample = null;
         if (shouldSampleContent(mimeType)) {
@@ -56,14 +56,13 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
             resourceCategory: getResourceCategory(request.resourceType()),
             isThirdParty: !request.url().includes(new URL(page.url()).hostname),
             hasAdKeywords: hasAdKeywords(request.url()),
-            hasTrackingParams: hasTrackingParams(urlObj.searchParams),
             isKnownAdDomain: isKnownAdDomain(urlObj.hostname),
             requestDurationMs: timing.start ? now - timing.start : null,
             initiatorType: timing.initiator,
             frameType: request.frame()?.parentFrame() ? 'nested' : 'top',
             headers: Object.entries(headers).reduce((acc, [key, val]) => {
                 const lower = key.toLowerCase();
-                if (lower.includes('ad') || lower.includes('track') || lower.includes('analytics')) {
+                if (lower.includes('ad')) {
                     acc[key] = val;
                 }
                 return acc;
