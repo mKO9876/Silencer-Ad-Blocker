@@ -7,7 +7,7 @@
     "scripts": ["background.js"]
   },
     "action": {
-    "default_popup": "adBlocker.html",
+    "default_popup": "adBlocker_popup.html",
     "default_icon": "./logos/logo.png"
   },
   "permissions": ["activeTab"]

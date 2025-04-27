@@ -27,8 +27,8 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
 
         const isAd = isEasyListAd(request.url(), domainRules, urlPatternRules) ||
             isKnownAdDomain(urlObj.hostname) ||
-            hasAdKeywords(request.url()) ||
-            hasTrackingParams(urlObj.searchParams);
+            hasAdKeywords(urlObj.hostname + urlObj.pathname)
+        hasTrackingParams(urlObj.searchParams);
 
         let contentSample = null;
         if (shouldSampleContent(mimeType)) {
