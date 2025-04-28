@@ -2,7 +2,8 @@ const { URL } = require('url');
 const {
     hasAdKeywords,
     isKnownAdDomain, getResourceCategory,
-    shouldSampleContent
+    shouldSampleContent,
+    isSponsoredUrl
 } = require('./helper');
 const { isEasyListAd } = require('./easylist');
 
@@ -27,7 +28,8 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
 
         const isAd = isEasyListAd(request.url(), domainRules, urlPatternRules) ||
             isKnownAdDomain(urlObj.hostname) ||
-            hasAdKeywords(urlObj.hostname + urlObj.pathname);
+            hasAdKeywords(urlObj.hostname + urlObj.pathname) ||
+            isSponsoredUrl(request.url());
 
 
         let contentSample = null;
@@ -55,8 +57,9 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
             isEasyListAd: isEasyListAd(request.url(), domainRules, urlPatternRules),
             resourceCategory: getResourceCategory(request.resourceType()),
             isThirdParty: !request.url().includes(new URL(page.url()).hostname),
-            hasAdKeywords: hasAdKeywords(request.url()),
+            hasAdKeywords: hasAdKeywords(request.url().hostname + request.url().pathname),
             isKnownAdDomain: isKnownAdDomain(urlObj.hostname),
+            isSponsoredUrl: isSponsoredUrl(request.url()),
             requestDurationMs: timing.start ? now - timing.start : null,
             initiatorType: timing.initiator,
             frameType: request.frame()?.parentFrame() ? 'nested' : 'top',

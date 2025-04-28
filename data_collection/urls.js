@@ -41,6 +41,9 @@ module.exports = {
         'https://techcrunch.com/2025/04/21/airbnb-will-automatically-display-total-price-to-all-users/',
         'https://theverge.com',
         'https://www.technewsworld.com/',
+        'https://www.ign.com/news/',
+        'https://www.ign.com/articles/after-marvel-rivals-support-players-went-on-strike-dev-lays-out-plans-to-buff-strategist-experience',
+        'https://store.steampowered.com/',
 
         //others
         'https://weather.com',
@@ -49,10 +52,26 @@ module.exports = {
         'https://www.friv.com/',
         'https://www.reddit.com/',
         'https://www.reddit.com/r/selfhosted/comments/1dhfuuu/where_do_you_get_your_daily_doze_of_interesting/',
+        "https://www.quora.com/What-is-the-most-valuable-thing-in-this-world",
+        "https://www.quora.com/Why-do-we-lie-1",
+        "https://www.fandom.com/",
+        "https://minecraft.fandom.com/wiki/Minecraft_Wiki",
+        "https://godofwar.fandom.com/wiki/God_of_War_Wiki",
+        "https://www.imdb.com/",
+        "https://www.sky.com/",
+        "https://open.spotify.com/",
+        "https://genius.com/",
+        "https://soundcloud.com/",
+        "https://www.ultimate-guitar.com/",
+        "https://www.tesco.com/groceries/?msockid=33064ad0410c64081c295f6b404a658a",
+        "https://www.waterstones.com/",
+        "https://www.bbcgoodfood.com/recipes",
 
 
         //croatian sites
         //news sites
+        "https://klik.hr/vijesti",
+        "https://znanost.com.hr/",
         'https://slobodnadalmacija.hr',
         'https://slobodnadalmacija.hr/vijesti/svijet/jutros-oko-sedam-sati-digla-se-uzbuna-u-vatikanu-svi-su-se-ustrcali-sve-oci-su-bile-uprte-u-kamerlenga-1470292?cx_linkref=sd_home_sd_nepropustite_najcitanije_items',
         'https://www.jutarnji.hr/',
@@ -62,16 +81,31 @@ module.exports = {
         'https://net.hr/',
         'https://www.vecernji.hr/',
         'https://dnevnik.hr/',
+        "https://dnevnik.hr/vijesti/svijet/tomislav-hacko-o-izboru-novog-pape-i-stanju-u-crkvi---910216.html",
         'https://www.24sata.hr/',
         'https://www.dnevno.hr/',
         'https://www.novilist.hr/',
         'https://www.telegram.hr/',
         'https://direktno.hr/?home',
         'https://n1info.hr/',
+        "https://vijesti.hrt.hr/",
+        "https://vijesti.hrt.hr/eu/berlin-ukrajina-ne-bi-trebala-prepustiti-sav-teritorij-pod-ruskom-okupacijom-12130207",
+        'https://www.zagreb.info/',
 
-        //others
-        'https://www.supersport.hr/', //gambling site
+        //gambling sites
+        "https://www.favbet.hr/hr/casino/",
+        "https://www.admiral.hr/",
+        "https://www.germaniasport.hr/hr#/",
+        "https://www.arenacasino.hr/hr/casino",
+        'https://www.supersport.hr/',
+
+
+        //others        
         'https://www.njuskalo.hr/', //site for selling
-        'https://www.zagreb.info/', //info site        
+        "https://www.aukcije.hr/",
+        "https://www.entrio.hr/",
+        "https://www.hempatia.hr/",
+        "https://www.futunatura.hr/",
+
     ]
 };
