@@ -27,7 +27,7 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
         const mimeType = headers['content-type'] || 'unknown';
 
         const isAd = isEasyListAd(request.url(), domainRules, urlPatternRules) ||
-            isKnownAdDomain(urlObj.hostname) ||
+            // isKnownAdDomain(urlObj.hostname) ||
             hasAdKeywords(urlObj.hostname + urlObj.pathname) ||
             isSponsoredUrl(request.url());
 
@@ -58,7 +58,7 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
             resourceCategory: getResourceCategory(request.resourceType()),
             isThirdParty: !request.url().includes(new URL(page.url()).hostname),
             hasAdKeywords: hasAdKeywords(request.url().hostname + request.url().pathname),
-            isKnownAdDomain: isKnownAdDomain(urlObj.hostname),
+            // isKnownAdDomain: isKnownAdDomain(urlObj.hostname),
             isSponsoredUrl: isSponsoredUrl(request.url()),
             requestDurationMs: timing.start ? now - timing.start : null,
             initiatorType: timing.initiator,

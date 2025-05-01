@@ -22,6 +22,7 @@ const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 
     const browser = await puppeteer.launch({
         headless: true,
+        userDataDir: './puppeteer_profile',
         defaultViewport: { width: 1366, height: 768 },
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security']
     });

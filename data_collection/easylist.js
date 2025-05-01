@@ -6,6 +6,7 @@ function parseEasyListRules(easyListText) {
     const urlPatternRules = new Set();
 
     rules.forEach((rule) => {
+        if (rule.startsWith('!') || rule.includes('##') || rule.includes('#@#')) return;
         if (rule.startsWith('||') && rule.endsWith('^')) {
             const domain = rule.slice(2, -1);
             domainRules.add(domain);
