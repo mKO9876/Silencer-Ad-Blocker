@@ -1,14 +1,25 @@
 {
   "name": "Silencer",
   "version": "1.0",
-  "description": "Blocker for ads and trackers",
+  "description": "Blocker for ads",
   "manifest_version": 3,
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js",
+    "type": "module"
   },
-    "action": {
+  "action": {
     "default_popup": "adBlocker_popup.html",
     "default_icon": "./logos/logo.png"
   },
-  "permissions": ["activeTab"]
+  "permissions": [
+    "activeTab",
+    "webRequest",
+    "webRequestBlocking",
+    "webNavigation",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
 }
