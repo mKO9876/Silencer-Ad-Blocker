@@ -28,7 +28,7 @@ function isSponsoredUrl(url) {
 }
 
 // const isKnownAdDomain = (domain) => KNOWN_AD_DOMAINS.some(adDomain => domain.includes(adDomain));
-const getResourceCategory = (type) => ['script', 'image', 'stylesheet', 'font', 'xhr'].includes(type) ? type : 'other';
+// const getResourceCategory = (type) => ['script', 'image', 'stylesheet', 'font', 'xhr'].includes(type) ? type : 'other';
 const shouldSampleContent = (mimeType) => mimeType && (
     mimeType.includes('text') ||
     mimeType.includes('json') ||
@@ -38,7 +38,7 @@ const shouldSampleContent = (mimeType) => mimeType && (
 module.exports = {
     hasAdKeywords,
     // isKnownAdDomain,
-    getResourceCategory,
+    // getResourceCategory,
     shouldSampleContent,
     isSponsoredUrl
 };

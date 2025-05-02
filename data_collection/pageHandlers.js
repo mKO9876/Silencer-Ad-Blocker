@@ -32,15 +32,15 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
             isSponsoredUrl(request.url());
 
 
-        let contentSample = null;
-        if (shouldSampleContent(mimeType)) {
-            try {
-                const text = await response.text();
-                contentSample = text.slice(0, 500).replace(/\s+/g, ' ');
-            } catch (e) {
-                console.warn(`Could not load body for this request: ${request.url()}`);
-            }
-        }
+        // let contentSample = null;
+        // if (shouldSampleContent(mimeType)) {
+        //     try {
+        //         const text = await response.text();
+        //         contentSample = text.slice(0, 500).replace(/\s+/g, ' ');
+        //     } catch (e) {
+        //         console.warn(`Could not load body for this request: ${request.url()}`);
+        //     }
+        // }
 
         const data = {
             // timestamp: new Date().toISOString(),
@@ -55,7 +55,7 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
             sizeBytes: parseInt(headers['content-length']) || 0,
             resourceType: request.resourceType(),
             isEasyListAd: isEasyListAd(request.url(), domainRules, urlPatternRules),
-            resourceCategory: getResourceCategory(request.resourceType()),
+            // resourceCategory: getResourceCategory(request.resourceType()),
             isThirdParty: !request.url().includes(new URL(page.url()).hostname),
             hasAdKeywords: hasAdKeywords(request.url().hostname + request.url().pathname),
             // isKnownAdDomain: isKnownAdDomain(urlObj.hostname),
@@ -70,7 +70,7 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
                 }
                 return acc;
             }, {}),
-            ...(contentSample && { contentSample }),
+            // ...(contentSample && { contentSample }),
             label: isAd ? 'ad' : 'non-ad'
         };
 

@@ -1,10 +1,15 @@
-// context.js
-chrome.contextMenus.create({
-    id: "myMenu",
-    title: "My Context Menu",
-    contexts: ["selection"]
-});
+const ort = require('onnxruntime-node');
+import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js';
 
-chrome.contextMenus.onClicked.addListener(function (info, tab) {
-    console.log("ContextMenu clicked");
-});
+async function classifyData(inputData) {
+    try {
+        const model = await ort.InferenceSession.create('./model.onnx');
+        // Run the model
+        const results = await model.run(inputData);
+        const output = results.label.data;
+        return output[0] === 1; //if 1 then block
+    } catch (e) {
+        console.error('Classification failed:', e);
+        return false;
+    }
+}
