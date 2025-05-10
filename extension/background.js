@@ -1,8 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js';
 
 const supabase = createClient(
-    '',
-    ''
+    'https://odicgtgtdifwktvmuiig.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kaWNndGd0ZGlmd2t0dm11aWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3NzM2MTgsImV4cCI6MjA2MTM0OTYxOH0.C9Rgx5KyCAelDjvC1e124I24Kv-E3ZrBX7wIIoIAs_4'
 );
 
 import { extractRequestData } from './helper.js';

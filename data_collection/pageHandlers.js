@@ -60,9 +60,9 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
             hasAdKeywords: hasAdKeywords(request.url().hostname + request.url().pathname),
             // isKnownAdDomain: isKnownAdDomain(urlObj.hostname),
             isSponsoredUrl: isSponsoredUrl(request.url()),
-            requestDurationMs: timing.start ? now - timing.start : null,
-            initiatorType: timing.initiator,
-            frameType: request.frame()?.parentFrame() ? 'nested' : 'top',
+            // requestDurationMs: timing.start ? now - timing.start : null,
+            // initiatorType: timing.initiator,
+            // frameType: request.frame()?.parentFrame() ? 'nested' : 'top',
             headers: Object.entries(headers).reduce((acc, [key, val]) => {
                 const lower = key.toLowerCase();
                 if (lower.includes('ad')) {
