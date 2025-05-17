@@ -6,11 +6,11 @@ const supabase = createClient(
 );
 
 import { extractRequestData } from './helper.js';
+import { classifyData } from './context.js';
 
 const requestQueue = [];
 let isProcessing = false;
 
-//insert data into requestedQueue
 chrome.webRequest.onCompleted.addListener(
     (details) => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -31,12 +31,12 @@ async function processQueue() {
     const details = requestQueue.shift();
 
     try {
-        console.log(details)
         const requestData = await extractRequestData(details);
-        // const labeledData = {
-        //     ...requestData,
-        //     label: classifyRequest(requestData)
-        // };
+        console.log("requested data: ", requestData)
+        const labeledData = {
+            ...requestData,
+            label: classifyData(requestData)
+        };
 
         // await saveToSupabase(labeledData);
     } catch (error) {
@@ -65,3 +65,90 @@ async function saveToSupabase(data) {
 async function blockContent(data) {
     console.log(data)
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+// chrome.runtime.onInstalled.addListener(() => {
+//     chrome.contextMenus.create({
+//         id: "report-incorrect-block",
+//         title: "Report incorrect block",
+//         contexts: ["all"],
+//         documentUrlPatterns: ["http://*/*", "https://*/*"]
+//     });
+// });
+
+// //report missed ad
+// chrome.runtime.onInstalled.addListener(() => {
+//     chrome.contextMenus.create({
+//         id: "report-missed-ad",
+//         title: "Report missed ad",
+//         contexts: ["all"],
+//         documentUrlPatterns: ["http://*/*", "https://*/*"]
+//     });
+// });
+
+// chrome.contextMenus.onClicked.addListener((info, tab) => {
+//     if (info.menuItemId === "report-missed-ad") {
+//         console.log("info: ", info)
+//         console.log("tab:", tab)
+//         handleMissedAdReport(tab, info);
+//     }
+// });
+
+// async function handleMissedAdReport(tab, info) {
+//     try {
+//         const elementInfo = await chrome.scripting.executeScript({
+//             target: { tabId: tab.id },
+//             func: getElementInfo,
+//             args: [info]
+//         });
+
+//         console.log("element: ", element)
+
+//         // Send to your Supabase database
+//         // const { error } = await supabase.from('feedback').insert([{
+//         //     type: 'false_negative',
+//         //     page_url: tab.url,
+//         //     element_info: elementInfo[0].result.outerHTML,
+//         //     element_xpath: elementInfo[0].result.xpath,
+//         //     selected_text: info.selectionText,
+//         //     timestamp: new Date().toISOString()
+//         // }]);
+
+//         // if (!error) {
+//         //     chrome.notifications.create({
+//         //         type: 'basic',
+//         //         title: 'Report Submitted',
+//         //         message: 'Thank you for reporting this missed ad!',
+//         //         iconUrl: 'icons/icon48.png'
+//         //     });
+//         // }
+//     } catch (error) {
+//         console.error('Error reporting missed ad:', error);
+//     }
+// }
+
+// // Function to get detailed element info
+// function getElementInfo(info) {
+//     const element = info.frameUrl ?
+//         document.evaluate(info.frameUrl, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue :
+//         document.elementFromPoint(info.x, info.y);
+
+//     function getXPath(el) {
+//         if (!el) return null;
+//         if (el.id) return `//*[@id="${el.id}"]`;
+//         const parts = [];
+//         while (el.parentNode) {
+//             let idx = Array.from(el.parentNode.children).indexOf(el) + 1;
+//             idx = idx > 1 ? `[${idx}]` : '';
+//             parts.unshift(`${el.tagName.toLowerCase()}${idx}`);
+//             el = el.parentNode;
+//         }
+//         return `/${parts.join('/')}`;
+//     }
+
+//     return {
+//         outerHTML: element?.outerHTML || 'No element found',
+//         xpath: getXPath(element)
+//     };
+// }

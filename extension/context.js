@@ -1,13 +1,24 @@
-const ort = require('onnxruntime-node');
-import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js';
+// use ES6 style import syntax (recommended)
+import * as ort from 'onnxruntime-web';
 
-async function classifyData(inputData) {
+
+export async function classifyData(inputData) {
     try {
-        const model = await ort.InferenceSession.create('./model.onnx');
-        // Run the model
-        const results = await model.run(inputData);
-        const output = results.label.data;
-        return output[0] === 1; //if 1 then block
+        console.log("ORT Module: ", ort);
+        console.log("ORT Keys: ", Object.keys(ort));
+        console.log("ORT InferenceSession: ", ort.InferenceSession);
+
+        const url = chrome.runtime.getURL('model.onnx')
+        console.log("url: ", url)
+        const session = await ort.InferenceSession.create(url);
+
+        const tensor = new ort.Tensor('float32', new Float32Array(inputData), [1, inputData.length]);
+
+        const feeds = { 'float_input': tensor };
+
+        const results = await session.run(feeds);
+        const output = results.output_label.data;
+        return output[0] === 1; // if 1 then block
     } catch (e) {
         console.error('Classification failed:', e);
         return false;

@@ -17,9 +17,24 @@
     "webRequestBlocking",
     "webNavigation",
     "storage",
-    "alarms"
+    "alarms",
+    "contextMenus"
   ],
   "host_permissions": [
     "<all_urls>"
-  ]
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "model.onnx",
+        "node_modules/onnxruntime-web/dist/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
 }
