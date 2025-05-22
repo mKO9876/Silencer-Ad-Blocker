@@ -3,7 +3,7 @@ export async function extractRequestData(details) {
     return {
         status: details.statusCode,
         sizeBytes: getResponseSize(details),
-        resourceType: typeValue(details.responseHeaders['content-type']),
+        resourceType: typeValue(details.responseHeaders),
 
         //header
         ad_auction_allowed: extractHeaders(details.responseHeaders),
@@ -29,7 +29,7 @@ export async function extractRequestData(details) {
         image_webp: checkMimeType(details.responseHeaders, "image/webp"),
         text_javascript: checkMimeType(details.responseHeaders, "image/jpg"),
 
-        url_length: url.href,
+        url_length: url.href.length,
         is_image: isImageUrl(url.pathname),
         isHttps: isHttps(url.protocol),
         queryParam_num: countParams(Object.fromEntries(url.searchParams.entries())),
@@ -60,7 +60,6 @@ function typeValue(data) {
         'media': 9,
         'manifest': 10
     };
-
     if (data in resourceTypeMap) return resourceTypeMap[data];
     return 8;
 }
