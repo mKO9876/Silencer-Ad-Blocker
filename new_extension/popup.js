@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
             blockedAdsDiv.appendChild(ul);
         } catch (error) {
             console.error('Error loading blocked ads:', error);
-            blockedAdsDiv.innerHTML = '<p>Greška pri učitavanju blokiranih oglasa.</p>';
+            blockedAdsDiv.innerHTML = '<p>Error while loading list.</p>';
         }
     });
 });

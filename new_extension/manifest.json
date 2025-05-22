@@ -6,7 +6,11 @@
         "webRequest",
         "declarativeNetRequest",
         "declarativeNetRequestFeedback",
-        "storage"
+        "storage",
+        "contextMenus",
+        "scripting",
+        "tabs",
+        "notifications"
     ],
     "host_permissions": [
         "<all_urls>"

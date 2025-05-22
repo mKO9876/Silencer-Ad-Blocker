@@ -1,12 +1,7 @@
-// import { createClient } from 'https://esm.sh/@supabase/supabase-js';
 import { extractRequestData } from './helper.js';
 import { SimpleXGBoost } from "./xgb.js";
+import { saveToSupabase } from './supabase.js';
 
-// // Initialize Supabase client
-// const supabase = createClient(
-//     'https://odicgtgtdifwktvmuiig.supabase.co',
-//     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kaWNndGd0ZGlmd2t0dm11aWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3NzM2MTgsImV4cCI6MjA2MTM0OTYxOH0.C9Rgx5KyCAelDjvC1e124I24Kv-E3ZrBX7wIIoIAs_4'
-// );
 
 // Global variables
 let model = null;
@@ -29,7 +24,7 @@ async function loadModel() {
             console.log("Model nije u JSON formatu, koristim direktno tekst");
         }
 
-        console.log("Model dump:", modelDump);
+        // console.log("Model dump:", modelDump);
 
         // Kreiraj model
         model = new SimpleXGBoost(modelDump);
@@ -118,7 +113,7 @@ async function initializeRules() {
         }
     } catch (error) {
         console.error("Error initializing rules:", error);
-        throw error; // Propagiramo grešku da znamo ako inicijalizacija nije uspjela
+        throw error;
     }
 }
 
@@ -167,17 +162,16 @@ async function addBlockingRule(url) {
     }
 }
 
-// Function to classify data using the model
 async function classifyData(details) {
     if (!model) return 0;
 
     try {
         const features = await extractRequestData(details);
-        // console.log("DATA: ", features)
 
         // Napravi predikciju
         const prediction = model.predict(features);
-        // console.log("PREDIKCIJA: ", prediction)
+        console.log("PREDICTION: ", prediction)
+
         // Vrati 1 ako je predikcija veća od 0.5, inače 0
         return prediction > 0.5 ? 1 : 0;
     } catch (error) {
@@ -189,12 +183,12 @@ async function classifyData(details) {
 // Pratimo zahtjeve i dodajemo pravila za blokiranje
 chrome.webRequest.onHeadersReceived.addListener(
     async (details) => {
-        console.log("Checking request:", details.url);
+        // console.log("Checking request:", details.url);
         const prediction = await classifyData(details);
-        console.log("Prediction for", details.url, ":", prediction);
+        // console.log("Prediction for", details.url, ":", prediction);
 
         if (prediction == 1) {
-            console.log("Attempting to block:", details.url);
+            // console.log("Attempting to block:", details.url);
             const blockedAd = {
                 url: details.url,
                 timestamp: new Date().toISOString(),
@@ -204,7 +198,7 @@ chrome.webRequest.onHeadersReceived.addListener(
 
             // Dodaj pravilo za blokiranje
             const success = await addBlockingRule(details.url);
-            console.log("Blocking rule added:", success ? "success" : "failed");
+            // console.log("Blocking rule added:", success ? "success" : "failed");
 
             if (success) {
                 blockedAds.push(blockedAd);
@@ -212,7 +206,7 @@ chrome.webRequest.onHeadersReceived.addListener(
 
                 // Spremi u chrome.storage za perzistenciju
                 chrome.storage.local.set({ blockedAds: blockedAds }, () => {
-                    console.log("Updated blocked ads in storage, total count:", blockedAds.length);
+                    // console.log("Updated blocked ads in storage, total count:", blockedAds.length);
                 });
             }
         }
@@ -224,8 +218,8 @@ chrome.webRequest.onHeadersReceived.addListener(
 // Dodaj funkciju za provjeru blokiranih oglasa
 async function checkBlockedAds() {
     const rules = await chrome.declarativeNetRequest.getDynamicRules();
-    console.log("Current blocking rules:", rules);
-    console.log("Total blocked ads in memory:", blockedAds.length);
+    // console.log("Current blocking rules:", rules);
+    // console.log("Total blocked ads in memory:", blockedAds.length);
 
     chrome.storage.local.get(['blockedAds'], (result) => {
         console.log("Total blocked ads in storage:", (result.blockedAds || []).length);
@@ -235,39 +229,76 @@ async function checkBlockedAds() {
 // Pozovi provjeru svakih 30 sekundi
 setInterval(checkBlockedAds, 30000);
 
-// Listener for popup messages
-// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-//     if (message.action === "getBlockedAds") {
-//         // Dohvati blokirane oglase iz storage-a
-//         chrome.storage.local.get(['blockedAds'], (result) => {
-//             sendResponse({ blockedAds: result.blockedAds || [] });
-//         });
-//         return true; // Potrebno za asinkroni odgovor
-//     }
-// });
-
-// Save to Supabase
-async function saveToSupabase(data) {
-    try {
-        // Direct fetch without import (because we cannot import modules in service workers)
-        const response = await fetch("https://odicgtgtdifwktvmuiig.supabase.co/rest/v1/url_data", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kaWNndGd0ZGlmd2t0dm11aWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3NzM2MTgsImV4cCI6MjA2MTM0OTYxOH0.C9Rgx5KyCAelDjvC1e124I24Kv-E3ZrBX7wIIoIAs_4",
-                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kaWNndGd0ZGlmd2t0dm11aWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3NzM2MTgsImV4cCI6MjA2MTM0OTYxOH0.C9Rgx5KyCAelDjvC1e124I24Kv-E3ZrBX7wIIoIAs_4"
-            },
-            body: JSON.stringify([data])
+// Listener za popup.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "getBlockedAds") {
+        // Dohvati blokirane oglase iz storage-a
+        chrome.storage.local.get(['blockedAds'], (result) => {
+            sendResponse({ blockedAds: result.blockedAds || [] });
         });
-
-        if (!response.ok) {
-            console.error("Supabase save error:", await response.text());
-            return false;
-        }
-
-        return true;
-    } catch (error) {
-        console.error("Supabase save error:", error);
-        return false;
+        return true; // Potrebno za asinkroni odgovor
     }
-}
+});
+
+
+//User feedback
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "report_fp",
+        title: "Report Incorrect Block",
+        contexts: ["all"]
+    });
+
+    chrome.contextMenus.create({
+        id: "report_fn",
+        title: "Report Missed Ad",
+        contexts: ["all"]
+    });
+});
+
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId === "report_fp" || info.menuItemId === "report_fn") {
+        try {
+            // URL elementa 
+            const url = info.linkUrl || info.srcUrl || info.frameUrl;
+
+            if (!url) {
+                console.error("Nije moguće dohvatiti URL elementa");
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: 'logos/logo.png',
+                    title: 'Greška',
+                    message: 'Nije moguće dohvatiti URL elementa. Molimo pokušajte ponovno.'
+                });
+                return;
+            }
+
+            const label = info.menuItemId === "report_fn" ? true : false;
+            // const features = await extractRequestData(details);
+
+            // Pripremi podatke za Supabase
+            const data = {
+                url: url,
+                label: label
+            };
+
+            // Spremi u Supabase
+            const success = await saveToSupabase(data);
+
+            if (success) {
+                console.log(`Report successfully saved for ${url} with label ${label}`);
+                // Prikaži notifikaciju korisniku
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: 'logos/logo.png',
+                    title: 'Report saved',
+                    message: "Thank you for reporting!"
+                });
+            } else {
+                console.error("Error saving report");
+            }
+        } catch (error) {
+            console.error("Error processing report:", error);
+        }
+    }
+});

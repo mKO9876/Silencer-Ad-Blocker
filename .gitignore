@@ -1,3 +1,4 @@
 data_collection/node_modules
 data_collection/puppeteer_profile
-extension/node_modules
+new_extension/lib
+new_extension/config.js
