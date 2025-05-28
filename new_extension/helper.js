@@ -22,18 +22,18 @@ export async function extractRequestData(details) {
         application_speculationrules_json: checkMimeType(details.responseHeaders, "application/speculationrules+json"),
         application_x_javascript: checkMimeType(details.responseHeaders, "application/x-javascript"),
         binary_octet_stream: checkMimeType(details.responseHeaders, "application/speculationrules+json"),
-        text_javascript: checkMimeType(details.responseHeaders, "text/javascript"),
         image_gif: checkMimeType(details.responseHeaders, "image/gif"),
         image_jpeg: checkMimeType(details.responseHeaders, "image/jpeg"),
+        image_jpg: checkMimeType(details.responseHeaders, "image/jpg"),
         image_png: checkMimeType(details.responseHeaders, "image/png"),
         image_webp: checkMimeType(details.responseHeaders, "image/webp"),
-        text_javascript: checkMimeType(details.responseHeaders, "image/jpg"),
+        text_javascript: checkMimeType(details.responseHeaders, "text/javascript"),
 
         url_length: url.href.length,
-        is_image: isImageUrl(url.pathname),
-        isHttps: isHttps(url.protocol),
         queryParam_num: countParams(Object.fromEntries(url.searchParams.entries())),
-        path_count: pathCount(url.pathname)
+        isHttps: isHttps(url.protocol),
+        path_count: pathCount(url.pathname),
+        is_image: isImageUrl(url.pathname),
     };
 }
 function checkMimeType(headers, targetType) {

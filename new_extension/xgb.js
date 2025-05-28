@@ -7,15 +7,12 @@ export class SimpleXGBoost {
     parseModelDump(dump) {
         const trees = [];
         const lines = dump.split('\n').filter(line => line.trim());
-
         let currentTreeNodes = {};
         let currentTreeRootId = null;
         let inTree = false;
-
         for (let line of lines) {
             line = line.trim()
-            console.log("LINE: ", line.trim())
-            // Ako linija počinje s brojem, to je čvor
+
             if (/^\d+:/.test(line)) {
                 inTree = true;
                 const [idPart, content] = line.split(':');
@@ -57,8 +54,6 @@ export class SimpleXGBoost {
                     const yes = parseInt(meta.find(m => m.includes('yes=')).split('=')[1]);
                     const no = parseInt(meta.find(m => m.includes('no=')).split('=')[1]);
 
-                    // console.log(`Node ${id} children: yes=${yes}, no=${no}`);
-
                     currentTreeNodes[id] = {
                         id,
                         is_leaf: false,
@@ -70,8 +65,6 @@ export class SimpleXGBoost {
                     };
                 }
             } else if (inTree) {
-                // Ako smo bili u stablu i naišli smo na prazan redak, to znači da je stablo završilo
-                //console.log('Tree nodes before building:', JSON.stringify(currentTreeNodes, null, 2));
                 trees.push(this.buildTree(currentTreeNodes, currentTreeRootId));
                 currentTreeNodes = {};
                 currentTreeRootId = null;
@@ -79,21 +72,16 @@ export class SimpleXGBoost {
             }
         }
 
-        // Dodaj posljednje stablo ako postoji
         if (Object.keys(currentTreeNodes).length > 0) {
-            //console.log('Tree nodes before building:', JSON.stringify(currentTreeNodes, null, 2));
             trees.push(this.buildTree(currentTreeNodes, currentTreeRootId));
         }
 
         return trees;
     }
-
-    // Parsira jedan red iz dump-a u čvor
     parseNode(line) {
         const indent = line.match(/^\t*/)[0].length;
         const content = line.trim();
 
-        // Parsira feature i threshold
         const match = content.match(/\[(.*?)([<>])(.*?)\]/);
         if (!match) {
             // Leaf node
@@ -119,16 +107,9 @@ export class SimpleXGBoost {
         };
     }
 
-    // Gradi stablo iz liste čvorova
     buildTree(nodeMap, nodeId) {
-        //console.log('Building tree for nodeId:', nodeId);
-        //console.log('Available nodes:', Object.keys(nodeMap));
         const node = nodeMap[nodeId];
-        //console.log('Current node:', node);
-        if (!node) {
-            //console.log('Node not found in map!');
-            return null;
-        }
+        if (!node) return null;
 
         if (node.is_leaf) {
             return {
@@ -136,10 +117,6 @@ export class SimpleXGBoost {
                 leaf_value: node.leaf_value
             };
         }
-
-        //console.log('Building children for node:', nodeId);
-        //console.log('Yes child:', node.yes);
-        //console.log('No child:', node.no);
 
         return {
             is_leaf: false,
@@ -151,8 +128,6 @@ export class SimpleXGBoost {
         };
     }
 
-
-    // Predikcija za jedan čvor stabla
     predictNode(node, features) {
         if (!node) return 0;
 
@@ -170,23 +145,11 @@ export class SimpleXGBoost {
             : this.predictNode(node.right_child, features);
     }
 
-
-    // Predikcija za cijeli model
     predict(features) {
         let prediction = 0;
-
-        // Zbroji predikcije svih stabala
-        for (const tree of this.trees) {
-
-            prediction += this.predictNode(tree, features);
-        }
-
-        // Primijeni sigmoid za binarnu klasifikaciju
+        for (const tree of this.trees) { prediction += this.predictNode(tree, features); }
         return this.sigmoid(prediction);
     }
 
-    // Sigmoid funkcija za transformaciju izlaza
-    sigmoid(x) {
-        return 1 / (1 + Math.exp(-x));
-    }
+    sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
 }

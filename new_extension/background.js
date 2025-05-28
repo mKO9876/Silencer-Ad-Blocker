@@ -2,33 +2,39 @@ import { extractRequestData } from './helper.js';
 import { SimpleXGBoost } from "./xgb.js";
 import { saveToSupabase } from './supabase.js';
 
-
-// Global variables
 let model = null;
 let blockedAds = [];
-const usedRuleIds = new Set(); // Set za praćenje korištenih ID-jeva
-const requestQueue = [];
+const usedRuleIds = new Set();
+const MAX_BLOCKED_ADS = 1000;
+
+function isValidWebsiteUrl(url) {
+    try {
+        console.log("Checking URL:", url);
+        const urlObj = new URL(url);
+        if (urlObj.hostname === 'localhost' ||
+            urlObj.hostname === '127.0.0.1' ||
+            urlObj.hostname.startsWith('chrome-') ||
+            urlObj.hostname === 'chrome.google.com' ||
+            urlObj.hostname === 'chrome-search.local' ||
+            urlObj.hostname === 'search.local' ||
+            urlObj.hostname === 'newtab' ||
+            !urlObj.protocol.startsWith('http')) {
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error("Error checking URL:", error);
+        return false;
+    }
+}
 
 async function loadModel() {
     try {
-        // Učitaj new_model.json kroz fetch
         const modelUrl = chrome.runtime.getURL("new_model.json");
         const response = await fetch(modelUrl);
         let modelDump = await response.text();
 
-        // Ako je model spremljen kao JSON string, parsiraj ga
-        try {
-            modelDump = JSON.parse(modelDump);
-        } catch (e) {
-            // Ako nije JSON, koristi tekst direktno
-            console.log("Model nije u JSON formatu, koristim direktno tekst");
-        }
-
-        // console.log("Model dump:", modelDump);
-
-        // Kreiraj model
         model = new SimpleXGBoost(modelDump);
-        // console.log("Parsed model:", JSON.stringify(model.trees, null, 2));
     } catch (error) {
         console.error("Error loading model:", error);
         throw error;
@@ -36,18 +42,17 @@ async function loadModel() {
 }
 
 
-// Dodaj listener za učitavanje proširenja
+// Listener za učitavanje proširenja
 chrome.runtime.onInstalled.addListener(async () => {
     console.log("Extension installed/updated");
     try {
+        if (!model) {
+            await loadModel();
+            console.log("Model loaded successfully");
+        }
+
         await initializeRules();
         console.log("Rules initialized successfully");
-
-        // Pričekaj da se model učita
-        while (!model) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        console.log("Extension ready to use with loaded model");
 
         // Provjeri blokirane oglase
         await checkBlockedAds();
@@ -59,19 +64,12 @@ chrome.runtime.onInstalled.addListener(async () => {
 // Funkcija za dobivanje sljedećeg dostupnog ID-a pravila
 async function getNextRuleId() {
     try {
-        // Dohvati sva postojeća pravila
         const rules = await chrome.declarativeNetRequest.getDynamicRules();
-
-        // Dodaj postojeće ID-jeve u Set
         rules.forEach(rule => usedRuleIds.add(rule.id));
 
-        // Pronađi prvi slobodan ID
         let nextId = 1;
-        while (usedRuleIds.has(nextId)) {
-            nextId++;
-        }
+        while (usedRuleIds.has(nextId)) { nextId++ }
 
-        // Dodaj novi ID u Set
         usedRuleIds.add(nextId);
         return nextId;
     } catch (error) {
@@ -117,16 +115,19 @@ async function initializeRules() {
     }
 }
 
-loadModel()
-
 // Funkcija za dodavanje pravila blokiranja
 async function addBlockingRule(url) {
+    let currentRuleId = null;
     try {
+        // Izvuci domenu iz URL-a
+        const urlObj = new URL(url);
+        const domain = urlObj.hostname;
+
         // Pričekaj da se sva postojeća pravila učitaju
         const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
 
         // Dohvati sljedeći dostupni ID
-        const currentRuleId = await getNextRuleId();
+        currentRuleId = await getNextRuleId();
 
         // Provjeri postoji li već pravilo s tim ID-em
         if (existingRules.some(rule => rule.id === currentRuleId)) {
@@ -167,13 +168,9 @@ async function classifyData(details) {
 
     try {
         const features = await extractRequestData(details);
-
-        // Napravi predikciju
         const prediction = model.predict(features);
-        console.log("PREDICTION: ", prediction)
-
-        // Vrati 1 ako je predikcija veća od 0.5, inače 0
-        return prediction > 0.5 ? 1 : 0;
+        if (prediction > 0.4 && prediction < 0.5) console.log("LINK: ", details, "\nFEATURES: ", features, "\n PREDICTION: ", prediction)
+        return prediction > 0.42 ? 1 : 0;
     } catch (error) {
         console.error("Error classifying data:", error);
         return 0;
@@ -183,12 +180,9 @@ async function classifyData(details) {
 // Pratimo zahtjeve i dodajemo pravila za blokiranje
 chrome.webRequest.onHeadersReceived.addListener(
     async (details) => {
-        // console.log("Checking request:", details.url);
         const prediction = await classifyData(details);
-        // console.log("Prediction for", details.url, ":", prediction);
 
         if (prediction == 1) {
-            // console.log("Attempting to block:", details.url);
             const blockedAd = {
                 url: details.url,
                 timestamp: new Date().toISOString(),
@@ -196,18 +190,17 @@ chrome.webRequest.onHeadersReceived.addListener(
                 tabId: details.tabId
             };
 
-            // Dodaj pravilo za blokiranje
             const success = await addBlockingRule(details.url);
-            // console.log("Blocking rule added:", success ? "success" : "failed");
 
             if (success) {
                 blockedAds.push(blockedAd);
-                console.log("Successfully blocked ad:", blockedAd);
-
-                // Spremi u chrome.storage za perzistenciju
+                //console.log("Successfully blocked: ", blockedAd)
                 chrome.storage.local.set({ blockedAds: blockedAds }, () => {
-                    // console.log("Updated blocked ads in storage, total count:", blockedAds.length);
                 });
+            }
+
+            if (blockedAds.length > MAX_BLOCKED_ADS) {
+                blockedAds = blockedAds.slice(blockedAds.length - MAX_BLOCKED_ADS);
             }
         }
     },
@@ -222,7 +215,7 @@ async function checkBlockedAds() {
     // console.log("Total blocked ads in memory:", blockedAds.length);
 
     chrome.storage.local.get(['blockedAds'], (result) => {
-        console.log("Total blocked ads in storage:", (result.blockedAds || []).length);
+        //console.log("Total blocked ads in storage:", (result.blockedAds || []).length);
     });
 }
 
@@ -274,7 +267,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             }
 
             const label = info.menuItemId === "report_fn" ? true : false;
-            // const features = await extractRequestData(details);
+
 
             // Pripremi podatke za Supabase
             const data = {

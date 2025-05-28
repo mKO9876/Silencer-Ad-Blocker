@@ -1,4 +1,4 @@
-const AD_KEYWORDS = ['ad', 'ads', 'banner', 'doubleclick', 'adservice', 'adsystem',
+const AD_KEYWORDS = ['ad', 'ads', 'banner', 'doubleclick', 'adservice', 'adsystem', 'adclick',
     'oglas', 'reklama', 'sponzorirano', 'sponzor', 'promocija',
     'plaćeni oglas', 'marketinški sadržaj', 'advertorial', 'banner', 'promo'
 ];
