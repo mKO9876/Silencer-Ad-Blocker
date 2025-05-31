@@ -5,7 +5,6 @@ import { saveToSupabase } from './supabase.js';
 let model = null;
 let blockedAds = [];
 const usedRuleIds = new Set();
-const MAX_BLOCKED_ADS = 1000;
 
 function isValidWebsiteUrl(url) {
     try {
@@ -149,6 +148,8 @@ async function addBlockingRule(url) {
             }
         };
 
+        console.log("RULE: ", rule)
+
         // Dodaj pravilo i pričekaj da se operacija završi
         await chrome.declarativeNetRequest.updateDynamicRules({
             addRules: [rule]
@@ -169,8 +170,8 @@ async function classifyData(details) {
     try {
         const features = await extractRequestData(details);
         const prediction = model.predict(features);
-        if (prediction > 0.4 && prediction < 0.5) console.log("LINK: ", details, "\nFEATURES: ", features, "\n PREDICTION: ", prediction)
-        return prediction > 0.42 ? 1 : 0;
+        //if (prediction < 0.4) console.log("LINK: ", details, "\nFEATURES: ", features, "\n PREDICTION: ", prediction)
+        return prediction > 0.5 ? 1 : 0;
     } catch (error) {
         console.error("Error classifying data:", error);
         return 0;
@@ -194,14 +195,11 @@ chrome.webRequest.onHeadersReceived.addListener(
 
             if (success) {
                 blockedAds.push(blockedAd);
-                //console.log("Successfully blocked: ", blockedAd)
+                console.log("Success: ", blockedAd)
                 chrome.storage.local.set({ blockedAds: blockedAds }, () => {
                 });
             }
-
-            if (blockedAds.length > MAX_BLOCKED_ADS) {
-                blockedAds = blockedAds.slice(blockedAds.length - MAX_BLOCKED_ADS);
-            }
+            else console.log("Didn't block: ", blockedAd)
         }
     },
     { urls: ["<all_urls>"] },
@@ -219,13 +217,12 @@ async function checkBlockedAds() {
     });
 }
 
-// Pozovi provjeru svakih 30 sekundi
-setInterval(checkBlockedAds, 30000);
+// Pozovi provjeru svakih 60 sekundi
+setInterval(checkBlockedAds, 60000);
 
 // Listener za popup.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "getBlockedAds") {
-        // Dohvati blokirane oglase iz storage-a
         chrome.storage.local.get(['blockedAds'], (result) => {
             sendResponse({ blockedAds: result.blockedAds || [] });
         });

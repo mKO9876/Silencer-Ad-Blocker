@@ -18,7 +18,10 @@ const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
     if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR);
 
     const { domainRules, urlPatternRules } = await downloadEasyList({ fs, https, path });
+
+
     console.log(`EasyList loaded: ${domainRules.size} domains, ${urlPatternRules.size} URL patterns`);
+
 
     const browser = await puppeteer.launch({
         headless: true,
