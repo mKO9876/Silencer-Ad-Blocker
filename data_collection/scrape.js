@@ -2,14 +2,12 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { parse } = require('json2csv');
-const { URL } = require('url');
 
 const targetURLs = require('./urls').links();
 const { downloadEasyList } = require('./easylist');
 const { onRequest, onRequestFinished } = require('./pageHandlers');
 const autoScroll = require('./autoScroll');
-const { saveData, saveCSV } = require('./dataSaver');
+const { saveData } = require('./dataSaver');
 
 const OUTPUT_DIR = "data";
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
@@ -50,7 +48,6 @@ const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
     }
 
     await saveData(allData.requests, OUTPUT_DIR);
-    await saveCSV(allData.requests, OUTPUT_DIR);
 
     await browser.close();
     console.log('Data collection complete!');

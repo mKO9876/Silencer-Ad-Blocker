@@ -1,11 +1,20 @@
 const { URL } = require('url');
 const {
     hasAdKeywords,
-    isKnownAdDomain, getResourceCategory,
-    shouldSampleContent,
+    isKnownAdDomain,
     isSponsoredUrl
 } = require('./helper');
 const { isEasyListAd } = require('./easylist');
+
+function calculateEntropy(str) {
+    const map = {};
+    for (const c of str) map[c] = (map[c] || 0) + 1;
+    const len = str.length;
+    return -Object.values(map)
+        .map(freq => freq / len)
+        .reduce((acc, p) => acc + p * Math.log2(p), 0);
+}
+
 
 const onRequest = (request, timingsMap) => {
     timingsMap.set(request.url(), {
@@ -22,54 +31,37 @@ const onRequestFinished = async (request, page, timingsMap, storage, domainRules
 
         const urlObj = new URL(request.url());
         const headers = response.headers();
-        const timing = timingsMap.get(request.url()) || {};
-        const now = Date.now();
         const mimeType = headers['content-type'] || 'unknown';
 
         const isAd = isEasyListAd(request.url(), domainRules, urlPatternRules) ||
             isKnownAdDomain(urlObj.hostname) ||
             isSponsoredUrl(request.url());
 
-
-        // let contentSample = null;
-        // if (shouldSampleContent(mimeType)) {
-        //     try {
-        //         const text = await response.text();
-        //         contentSample = text.slice(0, 500).replace(/\s+/g, ' ');
-        //     } catch (e) {
-        //         console.warn(`Could not load body for this request: ${request.url()}`);
-        //     }
-        // }
-
         const data = {
-            // timestamp: new Date().toISOString(),
             mainPageUrl: page.url(),
             url: request.url(),
-            domain: urlObj.hostname,
-            path: urlObj.pathname,
-            queryParams: Object.fromEntries(urlObj.searchParams),
-            method: request.method(),
+
+            urlLength: urlObj.hostname.length + urlObj.pathname.length,
+            queryParamsCount: urlObj.searchParams?.size || 0,
+            redirectCount: request.redirectChain().length,
+            tld: urlObj.hostname.split('.').pop(),
+            subdomainDepth: urlObj.hostname.split('.').length - 2,
+            urlEntropy: calculateEntropy(request.url()),
+
             status: response.status(),
             mimeType,
             sizeBytes: parseInt(headers['content-length']) || 0,
+
             resourceType: request.resourceType(),
+            setCookies: headers['set-cookie'] ? true : false,
+            headers,
+
+            //checkup
             isEasyListAd: isAd,
-            // resourceCategory: getResourceCategory(request.resourceType()),
             isThirdParty: !request.url().includes(new URL(page.url()).hostname),
             hasAdKeywords: hasAdKeywords(request.url().hostname + request.url().pathname),
             isKnownAdDomain: isKnownAdDomain(urlObj.hostname),
             isSponsoredUrl: isSponsoredUrl(request.url()),
-            // requestDurationMs: timing.start ? now - timing.start : null,
-            // initiatorType: timing.initiator,
-            // frameType: request.frame()?.parentFrame() ? 'nested' : 'top',
-            headers: Object.entries(headers).reduce((acc, [key, val]) => {
-                const lower = key.toLowerCase();
-                if (lower.includes('ad')) {
-                    acc[key] = val;
-                }
-                return acc;
-            }, {}),
-            // ...(contentSample && { contentSample }),
             label: isAd ? 'ad' : 'non-ad'
         };
 
